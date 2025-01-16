@@ -1,4 +1,7 @@
 # minimal-multipart-form-data-parser-c
+
+![CI/CD Status Badge](https://github.com/mofosyne/minimal-multipart-form-data-parser-c/actions/workflows/ci.yml/badge.svg)
+
 Minimal multipart/form-data Parser in C. Handles only one file, no validation.
 Targeting embedded systems, so aiming for small code size over speed or features.
 

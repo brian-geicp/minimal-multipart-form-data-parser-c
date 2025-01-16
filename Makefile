@@ -4,3 +4,9 @@ test: test.c minimal_multipart_parser.c
 	@./test
 
 .PHONY: test
+
+.PHONY: format
+format:
+	# pip install clang-format
+	clang-format -i *.c
+	clang-format -i *.h

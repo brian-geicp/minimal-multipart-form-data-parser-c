@@ -5,5 +5,5 @@
   "description": "Minimal multipart/form-data Parser in C. Handles only one file, no validation. Targeting embedded systems.",
   "keywords": ["http", "mime", "no malloc", "malloc free", "no dependencies"],
   "license": "MIT",
-  "src": ["src/minimal_multipart_parser.c", "src/minimal_multipart_parser.h"]
+  "src": ["minimal_multipart_parser.c", "minimal_multipart_parser.h"]
 }

@@ -12,7 +12,7 @@ Targeting embedded systems, so aiming for small code size over speed or features
 We have just three functions exposed for your usage:
 
 ```c
-bool minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c);
+MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c);
 char *minimal_multipart_parser_received_data_buffer(MinimalMultipartParserContext *context);
 unsigned int minimal_multipart_parser_received_data_count(MinimalMultipartParserContext *context);
 ```
@@ -26,12 +26,22 @@ Usage Example:
         const char c = input_multipart_payload[i];
 
         // processor handles incoming stream character by character
-        if (minimal_multipart_parser_process(&state, c))
+        const MultipartParserEvent event = minimal_multipart_parser_process(&state, c);
+
+        // Special Events That Needs Handling
+        if (event != MultipartParserEvent_None)
         {
-            // On data avaliable this is triggered
-            char *received_buffer = minimal_multipart_parser_received_data_buffer(&state);
-            unsigned int received_bytes = minimal_multipart_parser_received_data_count(&state);
-            // ... 
+            if (event == MultipartParserEvent_DataBufferAvailable)
+            {
+                // On data received this is triggered
+                const char *received_buffer = minimal_multipart_parser_received_data_buffer(&state);
+                const unsigned int received_bytes = minimal_multipart_parser_received_data_count(&state);
+                // ... write to file etc ...
+            }
+            else if (event == MultipartParserEvent_DataStreamCompleted)
+            {
+                break;
+            }
         }
     }
 ```

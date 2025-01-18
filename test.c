@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 
+//#define DEBUG
+
 char * MultipartParserEvent_To_Str(MultipartParserEvent event)
 {
     switch (event) {
@@ -33,11 +35,15 @@ bool test_case(const char *title, const char *input, const unsigned int input_si
     for (int i = 0; i < input_size; i++)
     {
         const char c = input[i];
-        //printf("[%x : %c]\n", c, isprint(c) ? c : c == '\r'? 'r' :  c == '\n'? 'n' : '?');
+#ifdef DEBUG
+        printf("[%x : %c]\n", c, isprint(c) ? c : c == '\r'? 'r' :  c == '\n'? 'n' : '?');
+#endif
         const MultipartParserEvent event = minimal_multipart_parser_process(&state, c);
         if (event != MultipartParserEvent_None)
         {
+#ifdef DEBUG
             printf("Event: %s\n", MultipartParserEvent_To_Str(event));
+#endif
             if (event == MultipartParserEvent_DataBufferAvailable)
             {
                 const char *received_buffer = minimal_multipart_parser_received_data_buffer(&state);

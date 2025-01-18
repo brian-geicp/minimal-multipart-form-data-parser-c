@@ -25,6 +25,7 @@ readme_update: multipart_extract
 multipart_extract: multipart_extract.c minimal_multipart_parser_embedded.o
 	@$(CC) $(CFLAGS) $(LDFLAGS) -g0 -Os $^ -o $@
 	size multipart_extract
+	./multipart_extract_test.sh
 
 .PHONY: test
 test: test.c minimal_multipart_parser_with_debug.o

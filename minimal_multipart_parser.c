@@ -10,19 +10,15 @@
 #include "minimal_multipart_parser.h"
 #include <stdbool.h>
 
-#define clamp_upper(value, max) ((value) < (max) ? (value) : (max))
-#define clamp_lower(value, min) ((value) > (min) ? (value) : (min))
-#define clamp_range(value, min, max) clamp_lower(min, clamp_upper(value, max))
-
 static inline unsigned int buffer_count(MinimalMultipartParserCharBuffer *context) { return context->count; }
 
-static void buffer_reset(MinimalMultipartParserCharBuffer *context)
+static inline void buffer_reset(MinimalMultipartParserCharBuffer *context)
 {
     context->buffer[0] = '\0';
     context->count = 0;
 }
 
-static bool buffer_add(MinimalMultipartParserCharBuffer *context, const char c)
+static inline bool buffer_add(MinimalMultipartParserCharBuffer *context, const char c)
 {
     if (context->count >= MINIMAL_MULTIPART_PARSER_FULL_BOUNDARY_BUFFER_MAX_CHAR)
     {
@@ -39,7 +35,6 @@ char *minimal_multipart_parser_received_data_buffer(MinimalMultipartParserContex
 
 unsigned int minimal_multipart_parser_received_data_count(MinimalMultipartParserContext *context) { return context->data.count; }
 
-// Return true if data available to be picked up from data buffer
 MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c)
 {
     MinimalMultipartParserCharBuffer *boundaryBuffer = &(context->boundary);

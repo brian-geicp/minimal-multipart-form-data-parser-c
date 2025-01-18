@@ -1,11 +1,12 @@
 # minimal-multipart-form-data-parser-c
 
-![CI/CD Status Badge](https://github.com/mofosyne/minimal-multipart-form-data-parser-c/actions/workflows/ci.yml/badge.svg)
+<versionBadge>![Version 0.2.1](https://img.shields.io/badge/version-0.2.1-blue.svg)</versionBadge>
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![C](https://img.shields.io/badge/Language-C-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![CI/CD Status Badge](https://github.com/mofosyne/minimal-multipart-form-data-parser-c/actions/workflows/ci.yml/badge.svg)](https://github.com/mofosyne/minimal-multipart-form-data-parser-c/actions)
 
 Minimal multipart/form-data Parser in C. Handles only one file, no validation.
 Targeting embedded systems, so aiming for small code size over speed or features.
-
-* library version: <version>0.2.0</version>
 
 ## Usage
 
@@ -51,16 +52,16 @@ Usage Example:
 A small micro utility program was written `multipart_extract` to find
 out the minimal expected program size on disk and in ram.
 
-Based on that case study, you can expect this library to consume around <flashSizeUsage>2912</flashSizeUsage> bytes in flash/disk memory storage and <ramSizeUsage>808</ramSizeUsage> bytes in ram usage.
+Based on that case study, you can expect this library to consume around <flashSizeUsage>2933</flashSizeUsage> bytes in flash/disk memory storage and <ramSizeUsage>808</ramSizeUsage> bytes in ram usage.
 
 Heres a breakdown of the program sections size usage:
 
 | `.text` | `.data` | `.bss` |
 | ---     | ---     | ---    |
-| <dotTextSize>2304</dotTextSize> B | <dotDataSize>608</dotDataSize> B | <dotBSSSize>200</dotBSSSize> B |
+| <dotTextSize>2325</dotTextSize> B | <dotDataSize>608</dotDataSize> B | <dotBSSSize>200</dotBSSSize> B |
 
 
-## Purpose For Existance
+## Purpose For Existence
 
 For use in very constrant devices
 
@@ -68,8 +69,10 @@ For use in very constrant devices
 * Use in CGI scripts (e.g. busybox)
 * Use in embedded devices (e.g. esp32)
 
-For the purpose these are the restrictions to this code:
+For this purpose these are the restrictions to this code:
 
+* Stick to C99 standard
+* Keep standard library usage to minimum to control code size to a predictable level
 * Must be streamable, so don't expect users to read in the whole file first.
 * Minimise size of code so it can fit in embedded systems
 * Minimise validation checks to keep code size low (aside from security considerations)
@@ -81,7 +84,39 @@ These are not considerations I am taking:
 * Will not be tolerant of only `\n` even if the spec allows for receiving it, in order to minimise code size. 
     - Will only follow CRLF (`\r\n`), because most browsers follow RFC2616.
 
+To that end I was able to:
+
+* Only need `stdbool.h` from the standard C99 library or higher
+* No malloc was required
+* Inputs can be streamed byte by byte
+* Buffering size kept to around the size of the boundary. Ergo `\r\n--` plus up to 70 characters.
+
 For all other cases, recommend using an actual webserver.
+
+## Other Similar Repositories To Consider
+
+All these are C based repositories that are more developed with more features than our 
+minimal implementation that you may want to consider if you need more features than this repo.
+
+* [iafonov/multipart-parser-c](https://github.com/iafonov/multipart-parser-c)
+    - Uses malloc
+    - Uses callback functions on each data reception
+    - You need to parse `Content-Type` from the response head yourself to get the boundary
+        - This is because the init function of that implementation requires it.
+        - Ours simply assumes that the first line of this form `\r\n--BOUNDARY\r\n` is the boundary which is a safe assumption to make
+
+* [francoiscolas/multipart-parser](https://github.com/francoiscolas/multipart-parser)
+    - Does not appear to use malloc
+    - Uses callback functions on each data reception
+    - Validates and throws an error if not of the exact form. Ours doesn't not for code size consideration.
+    - You need to parse `Content-Type` from the response head yourself to get the boundary
+        - This is because the init function of that implementation requires it.
+        - Ours simply assumes that the first line of this form `\r\n--BOUNDARY\r\n` is the boundary which is a safe assumption to make
+
+* [abiiranathan/libmultipart](https://github.com/abiiranathan/libmultipart)
+    - Uses malloc
+    - Assumes you have already stored the whole request body in memory, ours will process the http request byte by byte.
+    - But has extra features and validation for processing filenames, mimetype, etc...
 
 ## Assumptions
 

@@ -38,13 +38,13 @@ typedef enum MultipartParserEvent
 
 typedef enum MultipartParserPhase
 {
-    MultipartParserPhase_FindBoundaryStart_INIT,
-    MultipartParserPhase_FindBoundaryStart_SKIP_LINE,
-    MultipartParserPhase_FindBoundaryStart_CR,
-    MultipartParserPhase_FindBoundaryStart_LF,
-    MultipartParserPhase_FindBoundaryStart_D1,
-    MultipartParserPhase_ReadBoundaryStart,
-    MultipartParserPhase_SkipBoundaryStart_LF,
+    MultipartParserPhase_INIT,
+    MultipartParserPhase_Preamble_SKIP_LINE,
+    MultipartParserPhase_Preamble_CR,
+    MultipartParserPhase_Preamble_LF,
+    MultipartParserPhase_Preamble_HYPHEN,
+    MultipartParserPhase_GetBoundary,
+    MultipartParserPhase_GetBoundary_Done,
     MultipartParserPhase_SkipFileHeader,
     MultipartParserPhase_GetFileBytes,
     MultipartParserPhase_EndOfFile

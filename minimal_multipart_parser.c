@@ -46,101 +46,106 @@ MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserCont
         context->data_available = false;
     }
 
-    if (context->phase == MultipartParserPhase_FindBoundaryStart_INIT)
+    if (context->phase == MultipartParserPhase_INIT)
     {
         switch (c)
         {
             case '\r':
-                context->phase = MultipartParserPhase_FindBoundaryStart_CR;
-                return MultipartParserEvent_None;
-            case '\n':
-                context->phase = MultipartParserPhase_FindBoundaryStart_LF;
+                context->phase = MultipartParserPhase_Preamble_CR;
                 return MultipartParserEvent_None;
             case '-':
-                context->phase = MultipartParserPhase_FindBoundaryStart_D1;
+                context->phase = MultipartParserPhase_Preamble_HYPHEN;
                 return MultipartParserEvent_None;
             default:
-                context->phase = MultipartParserPhase_FindBoundaryStart_SKIP_LINE;
+                context->phase = MultipartParserPhase_Preamble_SKIP_LINE;
                 return MultipartParserEvent_None;
         }
     }
 
-    if (context->phase == MultipartParserPhase_FindBoundaryStart_SKIP_LINE)
+    if (context->phase == MultipartParserPhase_Preamble_SKIP_LINE)
     {
         switch (c)
         {
             case '\r':
-                context->phase = MultipartParserPhase_FindBoundaryStart_CR;
+                context->phase = MultipartParserPhase_Preamble_CR;
                 return MultipartParserEvent_None;
             case '\n':
-                context->phase = MultipartParserPhase_FindBoundaryStart_LF;
+                context->phase = MultipartParserPhase_Preamble_LF;
                 return MultipartParserEvent_None;
             default:
                 return MultipartParserEvent_None;
         }
     }
 
-    if (context->phase == MultipartParserPhase_FindBoundaryStart_CR)
+    if (context->phase == MultipartParserPhase_Preamble_CR)
     {
         switch (c)
         {
             case '\n':
-                context->phase = MultipartParserPhase_FindBoundaryStart_LF;
+                context->phase = MultipartParserPhase_Preamble_LF;
                 return MultipartParserEvent_None;
             default:
-                context->phase = MultipartParserPhase_FindBoundaryStart_SKIP_LINE;
+                context->phase = MultipartParserPhase_Preamble_SKIP_LINE;
                 return MultipartParserEvent_None;
         }
     }
 
-    if (context->phase == MultipartParserPhase_FindBoundaryStart_LF)
+    if (context->phase == MultipartParserPhase_Preamble_LF)
     {
         switch (c)
         {
             case '-':
-                context->phase = MultipartParserPhase_FindBoundaryStart_D1;
+                context->phase = MultipartParserPhase_Preamble_HYPHEN;
                 return MultipartParserEvent_None;
             default:
-                context->phase = MultipartParserPhase_FindBoundaryStart_SKIP_LINE;
+                context->phase = MultipartParserPhase_Preamble_SKIP_LINE;
                 return MultipartParserEvent_None;
         }
     }
 
-    if (context->phase == MultipartParserPhase_FindBoundaryStart_D1)
+    if (context->phase == MultipartParserPhase_Preamble_HYPHEN)
     {
         // Previously got a dash in '\r\n--', seeking another dash
         switch (c)
         {
             case '-':
-                context->phase = MultipartParserPhase_ReadBoundaryStart;
+                context->phase = MultipartParserPhase_GetBoundary;
                 buffer_add(boundaryBuffer, '\r');
                 buffer_add(boundaryBuffer, '\n');
                 buffer_add(boundaryBuffer, '-');
                 buffer_add(boundaryBuffer, '-');
                 return MultipartParserEvent_None;
             default:
-                context->phase = MultipartParserPhase_FindBoundaryStart_SKIP_LINE;
+                context->phase = MultipartParserPhase_Preamble_SKIP_LINE;
                 return MultipartParserEvent_None;
         }
     }
 
-    if (context->phase == MultipartParserPhase_ReadBoundaryStart)
+    if (context->phase == MultipartParserPhase_GetBoundary)
     {
         switch (c)
         {
             case '\r':
-                context->phase = MultipartParserPhase_SkipBoundaryStart_LF;
+                context->phase = MultipartParserPhase_GetBoundary_Done;
                 return MultipartParserEvent_None;
-            case '\n':
-                context->phase = MultipartParserPhase_SkipFileHeader;
-                return MultipartParserEvent_FileStreamFound;
             default:
-                buffer_add(boundaryBuffer, c);
+                if ((c < ' ') || ('~' < c))
+                {
+                    context->phase = MultipartParserPhase_Preamble_SKIP_LINE;
+                    buffer_reset(dataBuffer);
+                    return MultipartParserEvent_None;
+                }
+                if (!buffer_add(boundaryBuffer, c))
+                {
+                    context->phase = MultipartParserPhase_Preamble_SKIP_LINE;
+                    buffer_reset(dataBuffer);
+                    return MultipartParserEvent_None;
+                }
                 return MultipartParserEvent_None;
         }
     }
 
-    if (context->phase == MultipartParserPhase_SkipBoundaryStart_LF)
+    if (context->phase == MultipartParserPhase_GetBoundary_Done)
     {
         switch (c)
         {
@@ -148,6 +153,8 @@ MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserCont
                 context->phase = MultipartParserPhase_SkipFileHeader;
                 return MultipartParserEvent_FileStreamFound;
             default:
+                context->phase = MultipartParserPhase_Preamble_SKIP_LINE;
+                buffer_reset(dataBuffer);
                 return MultipartParserEvent_None;
         }
     }

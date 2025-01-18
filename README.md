@@ -5,6 +5,8 @@
 Minimal multipart/form-data Parser in C. Handles only one file, no validation.
 Targeting embedded systems, so aiming for small code size over speed or features.
 
+* library version: <version>0.2.0</version>
+
 ## Usage
 
 We have just three functions exposed for your usage:
@@ -33,6 +35,20 @@ Usage Example:
         }
     }
 ```
+
+## Size
+
+A small micro utility program was written `multipart_extract` to find
+out the minimal expected program size on disk and in ram.
+
+Based on that case study, you can expect this library to consume around <flashSizeUsage>2912</flashSizeUsage> bytes in flash/disk memory storage and <ramSizeUsage>808</ramSizeUsage> bytes in ram usage.
+
+Heres a breakdown of the program sections size usage:
+
+| `.text` | `.data` | `.bss` |
+| ---     | ---     | ---    |
+| <dotTextSize>2304</dotTextSize> B | <dotDataSize>608</dotDataSize> B | <dotBSSSize>200</dotBSSSize> B |
+
 
 ## Purpose For Existance
 

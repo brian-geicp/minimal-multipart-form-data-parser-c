@@ -26,9 +26,23 @@
 
 #define MINIMAL_MULTIPART_PARSER_MAX_CHAR (MINIMAL_MULTIPART_PARSER_FULL_BOUNDARY_BUFFER_MAX_CHAR)
 
+typedef enum MultipartParserEvent
+{
+    MultipartParserEvent_None,
+    MultipartParserEvent_FileStreamFound,
+    MultipartParserEvent_FileStreamStarting,
+    MultipartParserEvent_DataBufferAvailable,
+    MultipartParserEvent_DataStreamCompleted,
+    MultipartParserEvent_Error,
+} MultipartParserEvent;
+
 typedef enum MultipartParserPhase
 {
-    MultipartParserPhase_FindBoundaryStart,
+    MultipartParserPhase_FindBoundaryStart_INIT,
+    MultipartParserPhase_FindBoundaryStart_SKIP_LINE,
+    MultipartParserPhase_FindBoundaryStart_CR,
+    MultipartParserPhase_FindBoundaryStart_LF,
+    MultipartParserPhase_FindBoundaryStart_D1,
     MultipartParserPhase_ReadBoundaryStart,
     MultipartParserPhase_SkipBoundaryStart_LF,
     MultipartParserPhase_SkipFileHeader,
@@ -48,10 +62,10 @@ typedef struct MinimalMultipartParserContext
     MinimalMultipartParserCharBuffer boundary;
     MinimalMultipartParserCharBuffer data;
 
-    bool data_avaliable;
+    bool data_available;
 } MinimalMultipartParserContext;
 
-bool minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c);
+MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c);
 char *minimal_multipart_parser_received_data_buffer(MinimalMultipartParserContext *context);
 unsigned int minimal_multipart_parser_received_data_count(MinimalMultipartParserContext *context);
 

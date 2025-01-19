@@ -8,6 +8,26 @@
 Minimal multipart/form-data Parser in C. Handles only one file, no validation.
 Targeting embedded systems, so aiming for small code size over speed or features.
 
+In short it reads in a http stream for example ([example lifted from here](https://stackoverflow.com/questions/4238809/example-of-multipart-form-data)):
+
+```bash
+POST / HTTP/1.1
+Host: localhost:8000
+... shorted for brevity...
+Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
+Content-Length: 554
+
+-----------------------------9051914041544843365972754266
+Content-Disposition: form-data; name="text"
+
+text default
+-----------------------------9051914041544843365972754266
+... shorted for brevity...
+```
+
+And outputs just the content of the first file it sees. Ergo... `text default`.
+
+
 ## Usage
 
 We expose the following function for your usage:

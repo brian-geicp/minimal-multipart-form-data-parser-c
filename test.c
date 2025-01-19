@@ -10,18 +10,26 @@
 #include <stdio.h>
 #include <string.h>
 
-//#define DEBUG
+// #define DEBUG
 
-char * MultipartParserEvent_To_Str(MultipartParserEvent event)
+char *MultipartParserEvent_To_Str(MultipartParserEvent event)
 {
-    switch (event) {
-        case MultipartParserEvent_None: return "None";
-        case MultipartParserEvent_FileStreamFound: return "File Stream Found";
-        case MultipartParserEvent_FileStreamStarting: return "File Stream Starting";
-        case MultipartParserEvent_DataBufferAvailable: return "Data Buffer Available";
-        case MultipartParserEvent_DataStreamCompleted: return "Data Stream Completed";
-        case MultipartParserEvent_Error: return "Error";
-        default: return "?";
+    switch (event)
+    {
+        case MultipartParserEvent_None:
+            return "None";
+        case MultipartParserEvent_FileStreamFound:
+            return "File Stream Found";
+        case MultipartParserEvent_FileStreamStarting:
+            return "File Stream Starting";
+        case MultipartParserEvent_DataBufferAvailable:
+            return "Data Buffer Available";
+        case MultipartParserEvent_DataStreamCompleted:
+            return "Data Stream Completed";
+        case MultipartParserEvent_Error:
+            return "Error";
+        default:
+            return "?";
     }
 }
 
@@ -36,7 +44,7 @@ bool test_case(const char *title, const char *input, const unsigned int input_si
     {
         const char c = input[i];
 #ifdef DEBUG
-        printf("[%x : %c]\n", c, isprint(c) ? c : c == '\r'? 'r' :  c == '\n'? 'n' : '?');
+        printf("[%x : %c]\n", c, isprint(c) ? c : c == '\r' ? 'r' : c == '\n' ? 'n' : '?');
 #endif
         const MultipartParserEvent event = minimal_multipart_parser_process(&state, c);
         if (event != MultipartParserEvent_None)
@@ -186,7 +194,7 @@ bool test_case4(void)
 
     const char expected[] = {0x00, 0x01, 0x02, 0x03, '\r', '\n', 0x00};
 
-    return test_case("binary payload", input, sizeof(input)-1, expected, sizeof(expected));
+    return test_case("binary payload", input, sizeof(input) - 1, expected, sizeof(expected));
 }
 
 int main(int argc, char **argv)

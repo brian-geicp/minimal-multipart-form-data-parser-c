@@ -5,7 +5,7 @@
 // MIT licensed
 //
 
-// This is explicitly written to be very minimal and to use lots of 
+// This is explicitly written to be very minimal and to use lots of
 // global static variables to allow for gauging the embedded
 // memory size requirement of this library
 
@@ -21,7 +21,8 @@ int main(void)
     while ((c = getc(stdin)) != EOF)
     {
         const MultipartParserEvent event = minimal_multipart_parser_process(&state, (char)c);
-        if (event == MultipartParserEvent_DataBufferAvailable) {
+        if (event == MultipartParserEvent_DataBufferAvailable)
+        {
             const char *received_buffer = minimal_multipart_parser_received_data_buffer(&state);
             unsigned int received_bytes = minimal_multipart_parser_received_data_count(&state);
             for (int j = 0; j < received_bytes; j++)

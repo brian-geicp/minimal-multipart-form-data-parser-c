@@ -26,14 +26,12 @@ char *MultipartParserEvent_To_Str(MultipartParserEvent event)
             return "Data Buffer Available";
         case MultipartParserEvent_DataStreamCompleted:
             return "Data Stream Completed";
-        case MultipartParserEvent_Error:
-            return "Error";
         default:
             return "?";
     }
 }
 
-bool test_case(const char *title, const char *input, const unsigned int input_size, const char *expected, const unsigned int expected_byte_count)
+bool test_case(const char *title, const char *input, const unsigned int input_size, const char *expected, const unsigned int expected_byte_count, MultipartParserPhase expected_end_phase)
 {
     bool passed = true;
     char received_file_buffer[1000] = {0};
@@ -54,11 +52,10 @@ bool test_case(const char *title, const char *input, const unsigned int input_si
 #endif
             if (event == MultipartParserEvent_DataBufferAvailable)
             {
-                const char *received_buffer = minimal_multipart_parser_received_data_buffer(&state);
-                const unsigned int received_bytes = minimal_multipart_parser_received_data_count(&state);
-                for (int j = 0; j < received_bytes; j++)
+                for (unsigned int j = 0; j < minimal_multipart_parser_get_data_size(&state); j++)
                 {
-                    received_file_buffer[received_file_byte_count++] = received_buffer[j];
+                    const char rx = minimal_multipart_parser_get_data_buffer(&state)[j];
+                    received_file_buffer[received_file_byte_count++] = rx;
                 }
             }
             else if (event == MultipartParserEvent_DataStreamCompleted)
@@ -69,12 +66,22 @@ bool test_case(const char *title, const char *input, const unsigned int input_si
         }
     }
 
+    if (state.phase != expected_end_phase)
+    {
+        passed = false;
+    }
+
     if (received_file_byte_count != expected_byte_count)
     {
         passed = false;
     }
 
-    if (memcmp(expected, received_file_buffer, expected_byte_count) != 0)
+    if (expected_byte_count == 0 && received_file_byte_count != 0)
+    {
+        passed = false;
+    }
+
+    if (expected_byte_count != 0 && memcmp(expected, received_file_buffer, expected_byte_count) != 0)
     {
         passed = false;
     }
@@ -114,7 +121,7 @@ bool test_case1(void)
 
     const char expected[] = "text default";
 
-    return test_case("full http standard style", input, strlen(input), expected, strlen(expected));
+    return test_case("full http standard style", input, strlen(input), expected, strlen(expected), MultipartParserPhase_EndOfFile);
 }
 
 bool test_case2(void)
@@ -150,7 +157,7 @@ bool test_case2(void)
 
     const char expected[] = "text default";
 
-    return test_case("multipayload", input, strlen(input), expected, strlen(expected));
+    return test_case("multipayload", input, strlen(input), expected, strlen(expected), MultipartParserPhase_EndOfFile);
 }
 
 bool test_case3(void)
@@ -175,7 +182,7 @@ bool test_case3(void)
 
     const char expected[] = "text default";
 
-    return test_case("cgi style body only", input, strlen(input), expected, strlen(expected));
+    return test_case("cgi style body only", input, strlen(input), expected, strlen(expected), MultipartParserPhase_EndOfFile);
 }
 
 bool test_case4(void)
@@ -194,7 +201,37 @@ bool test_case4(void)
 
     const char expected[] = {0x00, 0x01, 0x02, 0x03, '\r', '\n', 0x00};
 
-    return test_case("binary payload", input, sizeof(input) - 1, expected, sizeof(expected));
+    return test_case("binary payload", input, sizeof(input) - 1, expected, sizeof(expected), MultipartParserPhase_EndOfFile);
+}
+
+bool test_case5(void)
+{
+    const char input[] = "-----------------------------9051914041544843365972754266\r\n"
+                         "Content-Disposition: form-data; name=\"text\"\r\n"
+                         "\r\n"
+                         "\x00"
+                         "\x01"
+                         "\x02";
+
+    const char expected[] = {0x00, 0x01, 0x02};
+
+    return test_case("Interrupted file transfer", input, sizeof(input) - 1, expected, sizeof(expected), MultipartParserPhase_GetFileBytes);
+}
+
+bool test_case6(void)
+{
+    const char input[] = "POST / HTTP/1.1\r\n"
+                         "Host: localhost:8000\r\n"
+                         "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0\r\n"
+                         "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+                         "Accept-Language: en-US,en;q=0.5\r\n"
+                         "Accept-Encoding: gzip, deflate\r\n"
+                         "Connection: keep-alive\r\n"
+                         "Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266\r\n"
+                         "Content-Len";
+
+
+    return test_case("No file stream found", input, strlen(input), NULL, 0, MultipartParserPhase_Preamble_SKIP_LINE);
 }
 
 int main(int argc, char **argv)
@@ -218,6 +255,16 @@ int main(int argc, char **argv)
     }
 
     if (!test_case4())
+    {
+        return 1;
+    }
+
+    if (!test_case5())
+    {
+        return 1;
+    }
+
+    if (!test_case6())
     {
         return 1;
     }

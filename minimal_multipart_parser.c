@@ -31,10 +31,6 @@ static inline bool buffer_add(MinimalMultipartParserCharBuffer *context, const c
     return true;
 }
 
-char *minimal_multipart_parser_received_data_buffer(MinimalMultipartParserContext *context) { return context->data.buffer; }
-
-unsigned int minimal_multipart_parser_received_data_count(MinimalMultipartParserContext *context) { return context->data.count; }
-
 MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c)
 {
     MinimalMultipartParserCharBuffer *boundaryBuffer = &(context->boundary);
@@ -208,8 +204,8 @@ MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserCont
     if (context->phase == MultipartParserPhase_EndOfFile)
     {
         // Do nothing... We already got the file now
-        return MultipartParserEvent_None;
+        return MultipartParserEvent_DataStreamCompleted;
     }
 
-    return MultipartParserEvent_Error;
+    return MultipartParserEvent_None;
 }

@@ -20,7 +20,6 @@ readme_update: multipart_extract
 	# Embedded flash data usage based on size of text + data + bss
 	size multipart_extract | awk 'NR==2 {print $$2 + $$3}' | xargs -I{} sed -i 's|<ramSizeUsage>.*</ramSizeUsage>|<ramSizeUsage>{}</ramSizeUsage>|' README.md
 
-
 .PHONY: multipart_extract
 multipart_extract: multipart_extract.c minimal_multipart_parser_embedded.o
 	@$(CC) $(CFLAGS) $(LDFLAGS) -g0 -Os $^ -o $@

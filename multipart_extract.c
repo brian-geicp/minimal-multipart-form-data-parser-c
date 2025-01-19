@@ -20,17 +20,26 @@ int main(void)
     int c;
     while ((c = getc(stdin)) != EOF)
     {
+        // processor handles incoming stream character by character
         const MultipartParserEvent event = minimal_multipart_parser_process(&state, (char)c);
+
+        // Special Events That Needs Handling
         if (event == MultipartParserEvent_DataBufferAvailable)
         {
-            const char *received_buffer = minimal_multipart_parser_received_data_buffer(&state);
-            unsigned int received_bytes = minimal_multipart_parser_received_data_count(&state);
-            for (int j = 0; j < received_bytes; j++)
+            // Data Avaliable To Receive
+            for (unsigned int j = 0; j < minimal_multipart_parser_get_data_size(&state); j++)
             {
-                putc(received_buffer[j], stdout);
+                const char rx = minimal_multipart_parser_get_data_buffer(&state)[j];
+                putc(rx, stdout);
             }
+        }
+        else if (event == MultipartParserEvent_DataStreamCompleted)
+        {
+            // Datastream Finished
+            break;
         }
     }
 
-    return 0;
+    // Stream ended without file?
+    return minimal_multipart_parser_is_file_received(&state) ? 0 : 1;
 }

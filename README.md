@@ -1,6 +1,6 @@
 # minimal-multipart-form-data-parser-c
 
-<versionBadge>![Version 0.2.1](https://img.shields.io/badge/version-0.2.1-blue.svg)</versionBadge>
+<versionBadge>![Version 0.3.0](https://img.shields.io/badge/version-0.3.0-blue.svg)</versionBadge>
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![C](https://img.shields.io/badge/Language-C-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
 [![CI/CD Status Badge](https://github.com/mofosyne/minimal-multipart-form-data-parser-c/actions/workflows/ci.yml/badge.svg)](https://github.com/mofosyne/minimal-multipart-form-data-parser-c/actions)
@@ -10,41 +10,70 @@ Targeting embedded systems, so aiming for small code size over speed or features
 
 ## Usage
 
-We have just three functions exposed for your usage:
+We expose the following function for your usage:
 
 ```c
 MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c);
-char *minimal_multipart_parser_received_data_buffer(MinimalMultipartParserContext *context);
-unsigned int minimal_multipart_parser_received_data_count(MinimalMultipartParserContext *context);
+```
+
+This `minimal_multipart_parser_process` function returns one of the following `MultipartParserEvent` events
+
+* `MultipartParserEvent_None` : No event has occurred; unsure whether a file stream is incoming.
+* `MultipartParserEvent_FileStreamFound` : A multipart file stream has been detected; the file is expected.
+* `MultipartParserEvent_FileStreamStarting` : A multipart file stream is starting; you may want to open a file handler to write the data.
+* `MultipartParserEvent_DataBufferAvailable` : Incoming data available. This is typically a byte, but can sometimes be more.
+* `MultipartParserEvent_DataStreamCompleted` : The file stream has ended. You may want to close the file handler.
+
+These are to be used when `MultipartParserEvent_DataBufferAvailable` is found:
+
+```c
+unsigned int minimal_multipart_parser_get_data_size(const MinimalMultipartParserContext *context);
+char *minimal_multipart_parser_get_data_buffer(const MinimalMultipartParserContext *context);
+```
+
+This is to be used when the incoming stream has ended to check if the file is ready to use.
+
+```c
+bool minimal_multipart_parser_is_file_received(const MinimalMultipartParserContext *context);
 ```
 
 Usage Example:
 
 ```c
-    MinimalMultipartParserContext state = {0};
-    for (int i = 0; i < input_multipart_payload_byte_count; i++)
+int c;
+while ((c = getc(stdin)) != EOF)
+{
+    // Processor handles incoming stream character by character
+    const MultipartParserEvent event = minimal_multipart_parser_process(&state, (char)c);
+
+    // Handle Special Events
+    if (event == MultipartParserEvent_DataBufferAvailable)
     {
-        const char c = input_multipart_payload[i];
-
-        // processor handles incoming stream character by character
-        const MultipartParserEvent event = minimal_multipart_parser_process(&state, c);
-
-        // Special Events That Needs Handling
-        if (event != MultipartParserEvent_None)
+        // Data Available To Receive
+        for (unsigned int j = 0; j < minimal_multipart_parser_get_data_size(&state); j++)
         {
-            if (event == MultipartParserEvent_DataBufferAvailable)
-            {
-                // On data received this is triggered
-                const char *received_buffer = minimal_multipart_parser_received_data_buffer(&state);
-                const unsigned int received_bytes = minimal_multipart_parser_received_data_count(&state);
-                // ... write to file etc ...
-            }
-            else if (event == MultipartParserEvent_DataStreamCompleted)
-            {
-                break;
-            }
+            const char rx = minimal_multipart_parser_get_data_buffer(&state)[j];
+            // Output received data
+            putc(rx, stdout);
         }
     }
+    else if (event == MultipartParserEvent_DataStreamCompleted)
+    {
+        // Data Stream Finished
+        break;
+    }
+}
+
+// Check if file has been received
+if (minimal_multipart_parser_is_file_received(&state))
+{
+    // File Received Successfully
+}
+else
+{
+    // File Reception Failed
+}
+
 ```
 
 ## Size
@@ -52,13 +81,13 @@ Usage Example:
 A small micro utility program was written `multipart_extract` to find
 out the minimal expected program size on disk and in ram.
 
-Based on that case study, you can expect this library to consume around <flashSizeUsage>2933</flashSizeUsage> bytes in flash/disk memory storage and <ramSizeUsage>808</ramSizeUsage> bytes in ram usage.
+Based on that case study, you can expect this library to consume around <flashSizeUsage>2841</flashSizeUsage> bytes in flash/disk memory storage and <ramSizeUsage>808</ramSizeUsage> bytes in ram usage.
 
 Heres a breakdown of the program sections size usage:
 
 | `.text` | `.data` | `.bss` |
 | ---     | ---     | ---    |
-| <dotTextSize>2325</dotTextSize> B | <dotDataSize>608</dotDataSize> B | <dotBSSSize>200</dotBSSSize> B |
+| <dotTextSize>2233</dotTextSize> B | <dotDataSize>608</dotDataSize> B | <dotBSSSize>200</dotBSSSize> B |
 
 
 ## Purpose For Existence

@@ -32,8 +32,7 @@ typedef enum MultipartParserEvent
     MultipartParserEvent_FileStreamFound,
     MultipartParserEvent_FileStreamStarting,
     MultipartParserEvent_DataBufferAvailable,
-    MultipartParserEvent_DataStreamCompleted,
-    MultipartParserEvent_Error,
+    MultipartParserEvent_DataStreamCompleted
 } MultipartParserEvent;
 
 typedef enum MultipartParserPhase
@@ -65,8 +64,21 @@ typedef struct MinimalMultipartParserContext
     bool data_available;
 } MinimalMultipartParserContext;
 
+static inline const unsigned int minimal_multipart_parser_get_data_size(const MinimalMultipartParserContext *context)
+{
+    return context->data.count;
+}
+
+static inline const char *minimal_multipart_parser_get_data_buffer(const MinimalMultipartParserContext *context)
+{
+    return context->data.buffer;
+}
+
+static inline const bool minimal_multipart_parser_is_file_received(const MinimalMultipartParserContext *context)
+{
+    return context->phase == MultipartParserPhase_EndOfFile;
+}
+
 MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c);
-char *minimal_multipart_parser_received_data_buffer(MinimalMultipartParserContext *context);
-unsigned int minimal_multipart_parser_received_data_count(MinimalMultipartParserContext *context);
 
 #endif

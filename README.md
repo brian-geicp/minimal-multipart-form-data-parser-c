@@ -93,7 +93,6 @@ else
 {
     // File Reception Failed
 }
-
 ```
 
 ## Size

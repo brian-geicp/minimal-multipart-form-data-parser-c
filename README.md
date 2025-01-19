@@ -13,7 +13,7 @@ In short it reads in a http stream for example ([example lifted from here](https
 ```bash
 POST / HTTP/1.1
 Host: localhost:8000
-... shorted for brevity...
+... shorted for brevity ...
 Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
 Content-Length: 554
 
@@ -22,7 +22,7 @@ Content-Disposition: form-data; name="text"
 
 text default
 -----------------------------9051914041544843365972754266
-... shorted for brevity...
+... shorted for brevity ...
 ```
 
 And outputs just the content of the first file it sees. Ergo... `text default`.

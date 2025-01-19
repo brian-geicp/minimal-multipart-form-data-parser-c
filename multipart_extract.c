@@ -20,7 +20,7 @@ int main(void)
     int c;
     while ((c = getc(stdin)) != EOF)
     {
-        // processor handles incoming stream character by character
+        // Processor handles incoming stream character by character
         const MultipartParserEvent event = minimal_multipart_parser_process(&state, (char)c);
 
         // Special Events That Needs Handling

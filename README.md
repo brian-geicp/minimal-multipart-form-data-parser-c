@@ -85,6 +85,7 @@ Example:
 
 ```c
 int c;
+static MinimalMultipartParserContext state = {0};
 while ((c = getc(stdin)) != EOF)
 {
     // Processor handles incoming stream character by character

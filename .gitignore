@@ -54,4 +54,7 @@ dkms.conf
 .vscode/
 
 test
+test.com.dbg
 multipart_extract
+multipart_extract.com.dbg
+

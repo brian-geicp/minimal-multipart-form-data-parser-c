@@ -1,7 +1,7 @@
 //
 // minimal_multipart_parser.c
 //
-// Copyright (c) 2024 Brian Khuu
+// Copyright (c) 2024 Brian Khuu https://briankhuu.com/
 // MIT licensed
 //
 // https://github.com/mofosyne/minimal-multipart-form-data-parser-c

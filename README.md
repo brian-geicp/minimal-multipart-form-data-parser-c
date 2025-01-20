@@ -1,19 +1,24 @@
-# minimal-multipart-form-data-parser-c
+# Minimal Multipart/Form-Data Parser in C (minimal-multipart-form-data-parser-c)
 
-<versionBadge>![Version 0.3.0](https://img.shields.io/badge/version-0.3.0-blue.svg)</versionBadge>
+<versionBadge>![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-blue.svg)</versionBadge>
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![C](https://img.shields.io/badge/Language-C-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
 [![CI/CD Status Badge](https://github.com/mofosyne/minimal-multipart-form-data-parser-c/actions/workflows/ci.yml/badge.svg)](https://github.com/mofosyne/minimal-multipart-form-data-parser-c/actions)
 
-Minimal multipart/form-data Parser in C. Handles only one file, no validation.
-Targeting embedded systems, so aiming for small code size over speed or features.
+A lightweight C library and micro-utility for parsing HTTP multipart/form-data streams. 
+Designed for embedded systems, it handles only one file per stream with no validation, 
+prioritizing small code size over speed or features.
 
-In short it reads in a http stream for example ([example lifted from here](https://stackoverflow.com/questions/4238809/example-of-multipart-form-data)):
+This tool adheres to the [Unix Philosophy](https://en.wikipedia.org/wiki/Unix_philosophy): it focuses on a single, well-defined task 
+and works seamlessly with other programs through standard input/output chaining.
+
+## Functionality
+
+Given an HTTP multipart stream ([example adapted from Stack Overflow](https://stackoverflow.com/questions/4238809/example-of-multipart-form-data)):
 
 ```bash
 POST / HTTP/1.1
 Host: localhost:8000
-... shorted for brevity ...
 Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
 Content-Length: 554
 
@@ -22,42 +27,61 @@ Content-Disposition: form-data; name="text"
 
 text default
 -----------------------------9051914041544843365972754266
-... shorted for brevity ...
+...
 ```
 
-And outputs just the content of the first file it sees. Ergo... `text default`.
+The parser extracts and outputs the first file's content:
+
+```
+text default
+```
 
 
 ## Usage
 
-We expose the following function for your usage:
+The library consists of two files, easily integrated into your project manually or via [clib](https://github.com/clibs/clib)
+
+```bash
+clib install mofosyne/minimal-multipart-form-data-parser-c
+```
+
+or copy these files manually to your source folder:
+
+```bash
+minimal_multipart_parser.c
+minimal_multipart_parser.h
+```
+
+### API
+
+The core function processes input streams character by character:
 
 ```c
 MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c);
 ```
 
-This `minimal_multipart_parser_process` function returns one of the following `MultipartParserEvent` events
+It emits one of the following events:
 
-* `MultipartParserEvent_None` : No event has occurred; unsure whether a file stream is incoming.
-* `MultipartParserEvent_FileStreamFound` : A multipart file stream has been detected; the file is expected.
-* `MultipartParserEvent_FileStreamStarting` : A multipart file stream is starting; you may want to open a file handler to write the data.
-* `MultipartParserEvent_DataBufferAvailable` : Incoming data available. This is typically a byte, but can sometimes be more.
-* `MultipartParserEvent_DataStreamCompleted` : The file stream has ended. You may want to close the file handler.
+* `MultipartParserEvent_None` : No event yet; awaiting a file stream.
+* `MultipartParserEvent_FileStreamFound` : A file stream has been detected.
+* `MultipartParserEvent_FileStreamStarting` : A file stream is starting.
+* `MultipartParserEvent_DataBufferAvailable` : File data is available (usually a byte or small buffer).
+* `MultipartParserEvent_DataStreamCompleted` : File stream has ended.
 
-These are to be used when `MultipartParserEvent_DataBufferAvailable` is found:
+Retrieve available data upon `MultipartParserEvent_DataBufferAvailable` event:
 
 ```c
 unsigned int minimal_multipart_parser_get_data_size(const MinimalMultipartParserContext *context);
 char *minimal_multipart_parser_get_data_buffer(const MinimalMultipartParserContext *context);
 ```
 
-This is to be used when the incoming stream has ended to check if the file is ready to use.
+Check if the file was fully received:
 
 ```c
 bool minimal_multipart_parser_is_file_received(const MinimalMultipartParserContext *context);
 ```
 
-Usage Example:
+Example:
 
 ```c
 int c;
@@ -94,6 +118,31 @@ else
     // File Reception Failed
 }
 ```
+
+### `multipart_extract` Micro-Utility
+
+A microutility named `multipart_extract` is provided and is installable and uninstallable via
+these two command below (`PREFIX=/usr/local` can be omitted or adjusted as needed to your preferred
+installation directory. By default it will install to `/usr/local/bin`).
+
+```bash
+sudo make PREFIX=/usr/local install
+sudo make PREFIX=/usr/local uninstall
+```
+
+It processes an HTTP multipart stream from standard input and outputs the first file's content to standard output.
+
+```bash
+echo -e "-----------------------------9051914041544843365972754266\r\n"\
+"Content-Disposition: form-data; name="text"\r\n"\
+"\r\n"\
+"text default\r\n"\
+"-----------------------------9051914041544843365972754266--\r\n" \
+| ./multipart_extract
+```
+
+Will output `text default`.
+
 
 ## Size
 

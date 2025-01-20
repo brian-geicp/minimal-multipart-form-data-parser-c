@@ -1,6 +1,6 @@
 {
   "name": "minimal-multipart-form-data-parser-c",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "repo": "mofosyne/minimal-multipart-form-data-parser-c",
   "description": "Minimal multipart/form-data Parser in C. Handles only one file, no validation. Targeting embedded systems.",
   "keywords": ["http", "mime", "no malloc", "malloc free", "no dependencies"],

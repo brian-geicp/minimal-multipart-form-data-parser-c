@@ -230,7 +230,6 @@ bool test_case6(void)
                          "Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266\r\n"
                          "Content-Len";
 
-
     return test_case("No file stream found", input, strlen(input), NULL, 0, MultipartParserPhase_Preamble_SKIP_LINE);
 }
 

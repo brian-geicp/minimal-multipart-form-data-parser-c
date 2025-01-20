@@ -23,4 +23,8 @@ jobs:
 
       - name: Run make
         run: |
-          make
+          make multipart_extract
+
+      - name: Run make
+        run: |
+          make test

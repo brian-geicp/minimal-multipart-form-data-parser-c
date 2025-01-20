@@ -1,7 +1,7 @@
 //
 // minimal_multipart_parser.h
 //
-// Copyright (c) 2024 Brian Khuu
+// Copyright (c) 2024 Brian Khuu https://briankhuu.com/
 // MIT licensed
 //
 // https://github.com/mofosyne/minimal-multipart-form-data-parser-c
@@ -64,20 +64,11 @@ typedef struct MinimalMultipartParserContext
     bool data_available;
 } MinimalMultipartParserContext;
 
-static inline const unsigned int minimal_multipart_parser_get_data_size(const MinimalMultipartParserContext *context)
-{
-    return context->data.count;
-}
+static inline const unsigned int minimal_multipart_parser_get_data_size(const MinimalMultipartParserContext *context) { return context->data.count; }
 
-static inline const char *minimal_multipart_parser_get_data_buffer(const MinimalMultipartParserContext *context)
-{
-    return context->data.buffer;
-}
+static inline const char *minimal_multipart_parser_get_data_buffer(const MinimalMultipartParserContext *context) { return context->data.buffer; }
 
-static inline const bool minimal_multipart_parser_is_file_received(const MinimalMultipartParserContext *context)
-{
-    return context->phase == MultipartParserPhase_EndOfFile;
-}
+static inline const bool minimal_multipart_parser_is_file_received(const MinimalMultipartParserContext *context) { return context->phase == MultipartParserPhase_EndOfFile; }
 
 MultipartParserEvent minimal_multipart_parser_process(MinimalMultipartParserContext *context, const char c);
 

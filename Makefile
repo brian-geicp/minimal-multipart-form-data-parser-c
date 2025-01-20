@@ -1,8 +1,16 @@
+CC      ?= cc
+CP      ?= cp -f
+RM      ?= rm -f
+MKDIR   ?= mkdir -p
+INSTALL ?= install
+
+PREFIX  ?= /usr/local
 
 CFLAGS += -Wall -std=c99 -pedantic
 
+
 .PHONY: all
-all: readme_update test
+all: multipart_extract test readme_update
 
 # Dev Note: $ is used by both make and AWK. Must escape $ for use in AWK within makefile.
 .PHONY: readme_update
@@ -19,6 +27,15 @@ readme_update: multipart_extract
 	size multipart_extract | awk 'NR==2 {print $$1 + $$2}' | xargs -I{} sed -i 's|<flashSizeUsage>.*</flashSizeUsage>|<flashSizeUsage>{}</flashSizeUsage>|' README.md
 	# Embedded flash data usage based on size of text + data + bss
 	size multipart_extract | awk 'NR==2 {print $$2 + $$3}' | xargs -I{} sed -i 's|<ramSizeUsage>.*</ramSizeUsage>|<ramSizeUsage>{}</ramSizeUsage>|' README.md
+
+.PHONY: install
+install: multipart_extract
+	$(MKDIR) $(PREFIX)/bin
+	$(INSTALL) multipart_extract $(PREFIX)/bin/multipart_extract
+
+.PHONY: uninstall
+uninstall:
+	$(RM)  $(PREFIX)/bin/multipart_extract
 
 .PHONY: multipart_extract
 multipart_extract: multipart_extract.c minimal_multipart_parser_embedded.o
@@ -40,9 +57,9 @@ format:
 
 .PHONY: clean
 clean:
-	rm -f *.o *.so
-	rm -f multipart_extract
-	rm -f test
+	$(RM) *.o *.so *.aarch64.elf 
+	$(RM) multipart_extract
+	$(RM) test
 
 # Static Library - Standard
 minimal_multipart_parser.o: minimal_multipart_parser.c

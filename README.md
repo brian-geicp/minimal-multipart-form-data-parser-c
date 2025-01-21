@@ -196,6 +196,13 @@ For all other cases, recommend using an actual webserver.
 All these are C based repositories that are more developed with more features than our 
 minimal implementation that you may want to consider if you need more features than this repo.
 
+* [fremouw/multipart](https://github.com/fremouw/multipart)
+    - Does not appear to use malloc
+    - Need all post data upfront, the multipart_post_t struct only contains pointers to the original data; not delimited with \0.
+    - Parses name, filename and content type
+    - Intended for ESP8266 using ESP8266_RTOS_SDK
+    - [Project considered complete according to Fremouw](https://github.com/fremouw/multipart/issues/1#issuecomment-2603247235)
+
 * [iafonov/multipart-parser-c](https://github.com/iafonov/multipart-parser-c)
     - Uses malloc
     - Uses callback functions on each data reception
